@@ -1,0 +1,30 @@
+# Залежності
+node_modules/
+
+# Збірка
+dist/
+build/
+
+# Звіти про покриття тестів (Vitest coverage)
+coverage/
+
+# Логи
+*.log
+npm-debug.log*
+
+# Змінні середовища
+.env
+.env.*
+!.env.example
+
+# Кеш та тимчасові файли
+.vite/
+*.tsbuildinfo
+.cache/
+
+# Редактори та ОС
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
