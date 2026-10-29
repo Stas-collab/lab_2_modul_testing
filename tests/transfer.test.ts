@@ -64,4 +64,16 @@ describe('calcTransferFee', () => {
       expect(calcTransferFee(amount)).toBe(expected);
     });
   });
+
+  describe('половинні значення копійки (похибка float)', () => {
+    // Очікувані значення пораховано вручну: 1 % від 501,50 = 5,015 → 5,02
+    it.each([
+      { amount: 501.5, expected: 5.02 },
+      { amount: 807.5, expected: 8.08 },
+      { amount: 815.5, expected: 8.16 },
+      { amount: 1000.5, expected: 10.01 },
+    ])('сума $amount → комісія $expected', ({ amount, expected }) => {
+      expect(calcTransferFee(amount)).toBe(expected);
+    });
+  });
 });
