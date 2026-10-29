@@ -42,4 +42,15 @@ describe('calcTransferFee', () => {
       expect(calcTransferFee(amount)).toBe(expected);
     });
   });
+
+  describe('додаткова перевірка для великих сум', () => {
+    it.each([50000.01, 50001, 100000, 1_000_000])(
+      'сума %s вимагає додаткової перевірки',
+      (amount) => {
+        expect(() => calcTransferFee(amount)).toThrow(
+          'ADDITIONAL_VERIFICATION_REQUIRED',
+        );
+      },
+    );
+  });
 });
