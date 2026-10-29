@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OrderService } from '../src/order-service';
+import { InMemoryOrderRepository } from './fakes/in-memory-repository';
 import type { RateProvider, OrderRepository, Notifier } from '../src/order-service';
 
 describe('OrderService — заглушки й шпигуни', () => {
@@ -40,5 +41,29 @@ describe('OrderService — заглушки й шпигуни', () => {
 
     expect(rates.getRate).not.toHaveBeenCalled();
     expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('збережене замовлення можна прочитати зі сховища', async () => {
+    const repo = new InMemoryOrderRepository();
+    const service = new OrderService(rates, repo, notifier);
+
+    await service.placeOrder({ id: 'A-4', amountUsd: 50, email: 'u@e.com' });
+
+    const saved = await repo.findById('A-4');
+    expect(saved?.amountUah).toBeCloseTo(2050, 2);
+    expect(repo.size).toBe(1);
+  });
+
+  it('не зберігає замовлення й не надсилає листа, якщо курс недоступний', async () => {
+    const repo = new InMemoryOrderRepository();
+    rates.getRate = vi.fn().mockRejectedValue(new Error('RATE_UNAVAILABLE'));
+    const service = new OrderService(rates, repo, notifier);
+
+    await expect(
+      service.placeOrder({ id: 'A-5', amountUsd: 100, email: 'u@e.com' }),
+    ).rejects.toThrow('RATE_UNAVAILABLE');
+
+    expect(repo.size).toBe(0);
+    expect(notifier.send).not.toHaveBeenCalled();
   });
 });
