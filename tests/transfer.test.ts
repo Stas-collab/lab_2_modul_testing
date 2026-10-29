@@ -19,4 +19,16 @@ describe('calcTransferFee', () => {
       },
     );
   });
+
+  describe('комісія 1 % від суми', () => {
+    it.each([
+      { amount: 501, expected: 5.01 },
+      { amount: 1000, expected: 10 },
+      { amount: 1234, expected: 12.34 },
+      { amount: 10000, expected: 100 },
+      { amount: 14999, expected: 149.99 },
+    ])('сума $amount → комісія $expected', ({ amount, expected }) => {
+      expect(calcTransferFee(amount)).toBeCloseTo(expected, 2);
+    });
+  });
 });
