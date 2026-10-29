@@ -31,4 +31,15 @@ describe('calcTransferFee', () => {
       expect(calcTransferFee(amount)).toBeCloseTo(expected, 2);
     });
   });
+
+  describe('максимальна комісія', () => {
+    it.each([
+      { amount: 15000, expected: 150 },
+      { amount: 15000.01, expected: 150 },
+      { amount: 20000, expected: 150 },
+      { amount: 50000, expected: 150 },
+    ])('сума $amount → комісія обмежена $expected', ({ amount, expected }) => {
+      expect(calcTransferFee(amount)).toBe(expected);
+    });
+  });
 });
