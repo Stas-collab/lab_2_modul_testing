@@ -1,3 +1,6 @@
 export function calcTransferFee(amount: number): number {
-  throw new Error('INVALID_AMOUNT');
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('INVALID_AMOUNT');
+  }
+  return 5;
 }
