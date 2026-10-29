@@ -1,9 +1,7 @@
-const FEE_RATE = 0.01;
+const FEE_PERCENT = 1;
 const MIN_FEE = 5;
 const MAX_FEE = 150;
 const MAX_TRANSFER_AMOUNT = 50000;
-
-const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 function assertValidAmount(amount: number): void {
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -20,5 +18,10 @@ function assertWithinLimit(amount: number): void {
 export function calcTransferFee(amount: number): number {
   assertValidAmount(amount);
   assertWithinLimit(amount);
-  return round2(Math.min(Math.max(amount * FEE_RATE, MIN_FEE), MAX_FEE));
+
+  const amountInKopecks = Math.round(amount * 100);
+  const feeInKopecks = Math.round((amountInKopecks * FEE_PERCENT) / 100);
+  const fee = feeInKopecks / 100;
+
+  return Math.min(Math.max(fee, MIN_FEE), MAX_FEE);
 }
