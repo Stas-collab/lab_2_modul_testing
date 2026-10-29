@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { withRetry } from '../src/retry';
 import { OrderService } from '../src/order-service';
 import { InMemoryOrderRepository } from './fakes/in-memory-repository';
 import type { RateProvider, OrderRepository, Notifier } from '../src/order-service';
@@ -65,5 +66,54 @@ describe('OrderService — заглушки й шпигуни', () => {
 
     expect(repo.size).toBe(0);
     expect(notifier.send).not.toHaveBeenCalled();
+  });
+
+  describe('фіксація часу', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-03-15T10:00:00.000Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('записує момент створення замовлення', async () => {
+      const record = await service.placeOrder({ id: 'A-6', amountUsd: 20, email: 'u@e.com' });
+      expect(record.createdAt).toBe('2026-03-15T10:00:00.000Z');
+    });
+  });
+});
+
+describe('withRetry — підміна таймерів', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('повторює спробу після невдачі', async () => {
+    vi.useFakeTimers();
+    const action = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('TIMEOUT'))
+      .mockResolvedValueOnce('ok');
+
+    const promise = withRetry(action, 3, 1000);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    await expect(promise).resolves.toBe('ok');
+    expect(action).toHaveBeenCalledTimes(2);
+  });
+
+  it('після вичерпання спроб повертає останню помилку', async () => {
+    vi.useFakeTimers();
+    const action = vi.fn().mockRejectedValue(new Error('TIMEOUT'));
+
+    const promise = withRetry(action, 3, 1000);
+    // твердження створюється ДО просування часу, щоб не було необробленого відхилення
+    const assertion = expect(promise).rejects.toThrow('TIMEOUT');
+    await vi.advanceTimersByTimeAsync(2000);
+
+    await assertion;
+    expect(action).toHaveBeenCalledTimes(3);
   });
 });
