@@ -53,4 +53,15 @@ describe('calcTransferFee', () => {
       },
     );
   });
+
+  describe('заокруглення до копійок', () => {
+    it.each([
+      { amount: 777.77, expected: 7.78 },
+      { amount: 999.99, expected: 10 },
+      { amount: 1234.56, expected: 12.35 },
+      { amount: 5000.49, expected: 50 },
+    ])('сума $amount → комісія $expected', ({ amount, expected }) => {
+      expect(calcTransferFee(amount)).toBe(expected);
+    });
+  });
 });
