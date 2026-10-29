@@ -10,4 +10,13 @@ describe('calcTransferFee', () => {
       },
     );
   });
+
+  describe('мінімальна комісія', () => {
+    it.each([0.01, 1, 100, 499.99, 500])(
+      'для суми %s комісія дорівнює мінімуму 5 грн',
+      (amount) => {
+        expect(calcTransferFee(amount)).toBe(5);
+      },
+    );
+  });
 });
