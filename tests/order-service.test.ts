@@ -68,6 +68,24 @@ describe('OrderService — заглушки й шпигуни', () => {
     expect(notifier.send).not.toHaveBeenCalled();
   });
 
+  describe('експеримент: стан проти взаємодії', () => {
+    it('[взаємодія] викликає repo.save рівно один раз', async () => {
+      await service.placeOrder({ id: 'E-1', amountUsd: 10, email: 'u@e.com' });
+
+      expect(repo.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('[стан] у сховищі лежить підтверджене замовлення в єдиному екземплярі', async () => {
+      const fake = new InMemoryOrderRepository();
+      const svc = new OrderService(rates, fake, notifier);
+
+      await svc.placeOrder({ id: 'E-2', amountUsd: 10, email: 'u@e.com' });
+
+      expect(fake.size).toBe(1);
+      expect((await fake.findById('E-2'))?.amountUah).toBeCloseTo(410, 2);
+    });
+  });
+
   describe('фіксація часу', () => {
     beforeEach(() => {
       vi.useFakeTimers();
