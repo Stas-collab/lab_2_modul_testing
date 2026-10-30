@@ -40,7 +40,6 @@ export class OrderService {
       createdAt: new Date().toISOString(),
     };
 
-    await this.repo.save({ ...record, status: 'draft' } as OrderRecord);
     await this.repo.save(record);
     await this.notifier.send(
       order.email,
